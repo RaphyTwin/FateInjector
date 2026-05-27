@@ -19,9 +19,11 @@ jobs:
         uses: lukka/get-cmake@latest
 
       - name: Configure
+        shell: cmd
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build
+        shell: cmd
         run: cmake --build build --config Release --parallel
 
       - name: Upload executable artifact
