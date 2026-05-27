@@ -16,6 +16,7 @@ EVT_CHECKBOX(202, OnAutoCheckBox)
 
 wxEND_EVENT_TABLE();
 
+bool cheapThreadFix = false;
 
 cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Fate Client Injector", wxDefaultPosition, wxSize(297.5, 162.5), wxMINIMIZE_BOX | wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN) {
     wxIcon icon(icon_xpm); // icons are shit to do but the technike is actually quite nice
@@ -37,6 +38,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Fate Client Injector", wxDefaultPos
 
     
     check_Custom->SetValue(customProcName);
+    check_Auto->SetValue(autoInject);
     txt_Delay->SetLabel(delaystr);
     txt_Path->SetLabel(dllPath);
     if (customProcName) {
@@ -44,6 +46,17 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Fate Client Injector", wxDefaultPos
     }
     else {
         txt_Name->Disable();
+    }
+    if (check_Auto->IsChecked()) {
+        txt_Name->Disable();
+        txt_Path->Disable();
+        txt_Delay->Disable();
+        btn_Select->Disable();
+        check_Custom->Disable();
+        if (!cheapThreadFix) {
+            std::thread loopthread(&cMain::loopInject, this); // for autoinject
+            loopthread.detach();
+        }
     }
     
     taskBarControl.SetIcon(icon, "Double-Click to show Fate Injector");
@@ -96,13 +109,7 @@ void cMain::OnInjectButtonExecute(wxCommandEvent& evt, cMain* ref) {
     ref->SetStatusText(debug, 0);
 
 
-    customProcName = ref->check_Custom->GetValue();
-    delaystr = ref->txt_Delay->GetValue();
-    dllPath = ref->txt_Path->GetValue();
-    procName = ref->txt_Name->GetValue();
-
-    config cfg;
-    cfg.saveConfig();
+    ref->saveConfigFromUi();
 
 	evt.Skip();
 }
@@ -112,6 +119,7 @@ void cMain::OnHideButton(wxCommandEvent& evt) {
 
     notification->Show();
     this->Hide();
+    setHiddenState(true);
 
     // Fate Client Injector is now hidden in system tray
 	evt.Skip();
@@ -141,8 +149,6 @@ void cMain::OnCustomCheckBox(wxCommandEvent& evt) {
 }
 
 
-bool cheapThreadFix = false;
-
 void cMain::OnAutoCheckBox(wxCommandEvent& evt) {
     if (check_Auto->IsChecked()) {
         txt_Name->Disable();
@@ -158,6 +164,7 @@ void cMain::OnAutoCheckBox(wxCommandEvent& evt) {
     else {
         disableAutoInject();
     }
+    saveConfigFromUi();
 
     evt.Skip();
 }
@@ -170,6 +177,25 @@ void cMain::disableAutoInject() {
     txt_Path->Enable();
     txt_Delay->Enable();
     btn_Select->Enable();
+}
+
+void cMain::saveConfigState() {
+    config cfg;
+    cfg.saveConfig();
+}
+
+void cMain::saveConfigFromUi() {
+    customProcName = check_Custom->GetValue();
+    autoInject = check_Auto->GetValue();
+    delaystr = txt_Delay->GetValue();
+    dllPath = txt_Path->GetValue();
+    procName = txt_Name->GetValue();
+    saveConfigState();
+}
+
+void cMain::setHiddenState(bool hidden) {
+    hideMenu = hidden;
+    saveConfigState();
 }
 
 bool cMain::loopInject() {
@@ -221,6 +247,8 @@ bool cMain::loopInject() {
             SetStatusText(debug, 0);
             check_Auto->SetValue(false); // wxWidgets does that automaticly on click so we only need this here
             disableAutoInject();
+            autoInject = false;
+            saveConfigState();
             cheapThreadFix = false;
             return true;
         }
@@ -230,13 +258,7 @@ bool cMain::loopInject() {
         SetStatusText(debug, 0);
         oldProcId = procId;
 
-        customProcName = ref->check_Custom->GetValue();
-        delaystr = ref->txt_Delay->GetValue();
-        dllPath = ref->txt_Path->GetValue();
-        procName = ref->txt_Name->GetValue();
-
-        config cfg;
-        cfg.saveConfig();
+        ref->saveConfigFromUi();
     }
     cheapThreadFix = false;
     return false;

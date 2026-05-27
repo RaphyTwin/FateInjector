@@ -5,6 +5,8 @@
 
 extern char working_dir[1024];
 extern bool customProcName;
+extern bool autoInject;
+extern bool hideMenu;
 extern std::wstring delaystr;
 extern std::wstring dllPath;
 extern std::wstring procName;

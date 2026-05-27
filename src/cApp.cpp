@@ -28,6 +28,10 @@ bool cApp::OnInit() {
 	m_frame1 = new cMain();
 	ref = m_frame1;
 	m_frame1->Show();
+    if (hideMenu) {
+        wxCommandEvent evt;
+        m_frame1->OnHideButton(evt);
+    }
 	return true;
 }
 

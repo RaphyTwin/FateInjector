@@ -39,5 +39,8 @@ public:
 public:
 	bool loopInject();
 	void disableAutoInject();
+    void saveConfigState();
+    void saveConfigFromUi();
+    void setHiddenState(bool hidden);
 	friend taskBarIcon::taskBarIcon();
 };

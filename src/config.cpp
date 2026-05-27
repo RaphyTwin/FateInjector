@@ -17,6 +17,8 @@ std::wstring configstr;
 
 char working_dir[1024];
 bool customProcName = false;
+bool autoInject = true;
+bool hideMenu = false;
 std::wstring delaystr = L"5";
 std::wstring dllPath = L"Click \"Select\" to select the dll file";
 std::wstring procName = L"minecraft.windows.exe";
@@ -110,6 +112,10 @@ std::wstring config::makeConfig()
     configstr += customProcName == true ? L"customProcName=true\n" : L"customProcName=false\n";
     // delaystr
     configstr += L"delaystr=" + delaystr + '\n';
+    // autoInject
+    configstr += autoInject == true ? L"autoInject=true\n" : L"autoInject=false\n";
+    // hideMenu
+    configstr += hideMenu == true ? L"hideMenu=true\n" : L"hideMenu=false\n";
     // dllPath
     configstr += L"dllPath=" + dllPath + '\n';
     // procName
@@ -127,6 +133,14 @@ void config::analyseState()
     else if (name == "delaystr")
     {
         delaystr = value;
+    }
+    else if (name == "autoInject")
+    {
+        autoInject = analyseBool();
+    }
+    else if (name == "hideMenu")
+    {
+        hideMenu = analyseBool();
     }
     else if (name == "dllPath")
     {

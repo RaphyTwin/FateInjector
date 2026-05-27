@@ -24,6 +24,7 @@ void taskBarIcon::onTaskBarDClick(wxTaskBarIconEvent &evt)
 {
 
     ref->Show();
+    ref->setHiddenState(false);
 
     evt.Skip();
 }
@@ -46,5 +47,6 @@ void taskBarIcon::onOpenMenu(wxCommandEvent &evt)
 {
 
     ref->Show();
+    ref->setHiddenState(false);
     evt.Skip();
 }
