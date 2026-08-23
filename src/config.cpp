@@ -148,7 +148,7 @@ void config::analyseState()
     }
     else if (name == "titleName" || name = "procName")
     {
-        procName = value;
+        titleName = value;
     }
     else
     {
