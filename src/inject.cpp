@@ -1,34 +1,17 @@
 #include "pch.h"
 #include "inject.h"
 
-#include <TlHelp32.h>
-
-DWORD GetProcId(const char *procName)
+DWORD GetProcId(const char *titleName)
 
 {
-    DWORD procId = 0;
-    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-
-    if (hSnap != INVALID_HANDLE_VALUE)
+    HWND hWnd = FindWindowA(NULL, titleName);
+    if (!hWnd)
     {
-        PROCESSENTRY32 procEntry;
-        procEntry.dwSize = sizeof(procEntry);
-
-        if (Process32First(hSnap, &procEntry))
-        {
-            do
-            {
-                char output[256] = "error"; // convert wchar* to char*
-                sprintf(output, "%ws", procEntry.szExeFile);
-                if (!_stricmp(output, procName))
-                {
-                    procId = procEntry.th32ProcessID;
-                    break;
-                }
-            } while (Process32Next(hSnap, &procEntry));
-        }
+        return 0;
     }
-    CloseHandle(hSnap);
+
+    DWORD procId = 0;
+    GetWindowThreadProcessId(hWnd, &procId);
     return procId;
 }
 

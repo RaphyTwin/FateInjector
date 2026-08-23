@@ -9,7 +9,7 @@ extern bool autoInject;
 extern bool hideMenu;
 extern std::wstring delaystr;
 extern std::wstring dllPath;
-extern std::wstring procName;
+extern std::wstring titleName;
 
 
 class config {

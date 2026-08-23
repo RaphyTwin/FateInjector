@@ -27,7 +27,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Fate Client Injector", wxDefaultPos
 	btn_Inject = new wxButton(mainPanel, 101, "Inject", wxPoint(5, 5), wxSize(100, 40));
    	btn_Hide = new wxButton(mainPanel, 102, "Hide Menu", wxPoint(5, 50), wxSize(100, 20));
     btn_Select = new wxButton(mainPanel, 103, "Select", wxPoint(5, 75), wxSize(60, 20));
-	txt_Name = new wxTextCtrl(mainPanel, wxID_ANY, "minecraft.windows.exe", wxPoint(110, 5), wxSize(165, 20));
+	txt_Name = new wxTextCtrl(mainPanel, wxID_ANY, "Minecraft", wxPoint(110, 5), wxSize(165, 20));
 	check_Custom = new wxCheckBox(mainPanel, 201, "Custom Target", wxPoint(110, 30), wxSize(165, 20));
 	check_Auto = new wxCheckBox(mainPanel, 202, "Auto Inject", wxPoint(110, 50), wxSize(130, 20));
 	txt_Delay = new wxTextCtrl(mainPanel, wxID_ANY, "5", wxPoint(245, 50), wxSize(30, 20), wxTE_CENTRE, wxTextValidator(wxFILTER_NUMERIC));
@@ -42,7 +42,7 @@ cMain::cMain() : wxFrame(nullptr, wxID_ANY, "Fate Client Injector", wxDefaultPos
     txt_Delay->SetLabel(delaystr);
     txt_Path->SetLabel(dllPath);
     if (customProcName) {
-        txt_Name->SetLabel(procName);
+        txt_Name->SetLabel(titleName);
     }
     else {
         txt_Name->Disable();
@@ -143,7 +143,7 @@ void cMain::OnCustomCheckBox(wxCommandEvent& evt) {
     }
     else {
         txt_Name->Enable(false);
-        txt_Name->SetLabel("minecraft.windows.exe");
+        txt_Name->SetLabel("Minecraft");
     }
     evt.Skip();
 }
@@ -189,7 +189,7 @@ void cMain::saveConfigFromUi() {
     autoInject = check_Auto->GetValue();
     delaystr = txt_Delay->GetValue();
     dllPath = txt_Path->GetValue();
-    procName = txt_Name->GetValue();
+    titleName = txt_Name->GetValue();
     saveConfigState();
 }
 
