@@ -146,7 +146,7 @@ void config::analyseState()
     {
         dllPath = value;
     }
-    else if (name == "titleName" || name = "procName")
+    else if (name == "titleName" || name == "procName")
     {
         titleName = value;
     }
