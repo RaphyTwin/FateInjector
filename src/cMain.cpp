@@ -225,7 +225,7 @@ bool cMain::loopInject() {
             }
         }
 
-        wxString wxStrPath = dllPath;
+        std::wstring wStrPath = dllPath;
         std::ifstream test(wStrPath.c_str()); // test if file path is valid
         if (!test) {
             SetStatusText("AutoInject: Invalid DLL file path!", 0);
