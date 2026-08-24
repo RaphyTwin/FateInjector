@@ -14,8 +14,6 @@ EVT_BUTTON(103, OnSelectButton)
 EVT_CHECKBOX(201, OnCustomCheckBox)
 EVT_CHECKBOX(202, OnAutoCheckBox)
 
-EVT_CHECKBOX(301, cMain::OnTimer)
-
 wxEND_EVENT_TABLE();
 
 bool cheapThreadFix = false;
@@ -162,10 +160,8 @@ void cMain::OnAutoCheckBox(wxCommandEvent& evt) {
         }
     }
     else {
-        m_timer.Stop();
         disableAutoInject();
     }
-    saveConfigFromUi();
 
     evt.Skip();
 }
@@ -205,14 +201,6 @@ bool cMain::loopInject() {
 
     int delay = atoi(txt_Delay->GetValue().mb_str());
     if (delay <= 1) delay = 1;
-
-        txt_Delay->SetLabel("1");
-        debug = "AutoInject: Enabled | trying every second";
-    }
-    else {
-        debug = "AutoInject: Enabled | trying every " + std::to_string(delay) + " seconds";
-    }
-    SetStatusText(debug, 0);
 
     DWORD procId = 0;
     DWORD oldProcId = 0;
