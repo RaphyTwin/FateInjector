@@ -14,6 +14,8 @@ EVT_BUTTON(103, OnSelectButton)
 EVT_CHECKBOX(201, OnCustomCheckBox)
 EVT_CHECKBOX(202, OnAutoCheckBox)
 
+EVT_CHECKBOX(301, cMain::OnTimer)
+
 wxEND_EVENT_TABLE();
 
 bool cheapThreadFix = false;
@@ -82,33 +84,31 @@ void cMain::OnInjectButton(wxCommandEvent& evt) {
 void cMain::OnInjectButtonExecute(wxCommandEvent& evt, cMain* ref) {
     std::string debug;
 
-    DWORD procId = 0;
-
-    procId = GetProcId(ref->txt_Name->GetValue().mb_str());
-
+    DWORD procId = GetProcId(ref->txt_Name->GetValue().mb_str());
 
     if (procId == 0) {
-
-        debug = "Can't find process! | " + std::to_string(procId);
-        ref->SetStatusText(debug, 0);
+        ref->SetStatusText("Can't find process!", 0);
         return;
     }
+
     wxString wxStrPath = ref->txt_Path->GetValue();
     std::wstring wStrPath = wxStrPath.ToStdWstring(); // converting wxstr to wstr
     std::ifstream test(wStrPath.c_str()); // test if file path is valid
     if (!test) {
-
         debug = "Process found! | " + std::to_string(procId) + " | invalid file path";
-        ref->SetStatusText(debug, 0);
+        ref->SetStatusText("Process found! | " + std::to_string(procId) + " | invalid file path", 0);
         return;
     }
 
     SetAccessControl(wStrPath, L"S-1-15-2-1");
-    performInjection(procId, wStrPath.c_str());
-    debug = "Process found! | " + std::to_string(procId) + " | valid file path | Injected!";
+    int res = performInjection(procId, wStrPath.c_str());
+    if (res == 0) {
+        debug = "Process found! | " + std::to_string(procId) + " | Injected!";
+    } else {
+        debug = "Injection failed! Error Code: " + std::to_string(res) + " | PID: " + std::to_string(procId);
+    }
+    
     ref->SetStatusText(debug, 0);
-
-
     ref->saveConfigFromUi();
 
 	evt.Skip();
@@ -162,6 +162,7 @@ void cMain::OnAutoCheckBox(wxCommandEvent& evt) {
         }
     }
     else {
+        m_timer.Stop();
         disableAutoInject();
     }
     saveConfigFromUi();
@@ -203,9 +204,8 @@ bool cMain::loopInject() {
     std::string debug;
 
     int delay = atoi(txt_Delay->GetValue().mb_str());
+    if (delay <= 1) delay = 1;
 
-    if (delay <= 1) {
-        delay = 1;
         txt_Delay->SetLabel("1");
         debug = "AutoInject: Enabled | trying every second";
     }
@@ -214,52 +214,50 @@ bool cMain::loopInject() {
     }
     SetStatusText(debug, 0);
 
-
     DWORD procId = 0;
     DWORD oldProcId = 0;
+    int delayMs = delay * 1000;
 
-    delay *= 1000;
-
-    while (check_Auto->IsChecked()) {
-
+    while (autoInject) {
         while (procId == oldProcId || procId == 0) {
-            Sleep(delay);
-            procId = GetProcId(txt_Name->GetValue().mb_str());
-            if (procId == 0) {
-                debug = "AutoInject: Can't find process! | " + std::to_string(procId);
-                SetStatusText(debug, 0);
-            }
-            else if (procId == oldProcId) {
-                debug = "AutoInject: Already Injected! | " + std::to_string(procId);
-                SetStatusText(debug, 0);
-            }
-            if (!check_Auto->IsChecked()) {
+            Sleep(delayMs);
+            if (!autoInject) {
                 cheapThreadFix = false;
                 return false;
             }
+
+            std::string targetTitle(titleName.begin(), titleName.end());
+            procId = GetProcId(targetTitle.c_str());
+
+            if (procId == 0) {
+                SetStatusText("AutoInject: Can't find process!", 0);
+            }
+            else if (procId == oldProcId) {
+                SetStatusText("AutoInject: Already Injected! | " + std::to_string(procId), 0);
+            }
         }
-        wxString wxStrPath = txt_Path->GetValue();
-        std::wstring wStrPath = wxStrPath.ToStdWstring(); // converting wxstr to wstr
+
+        wxString wxStrPath = dllPath;
         std::ifstream test(wStrPath.c_str()); // test if file path is valid
         if (!test) {
-
-            debug = "AutoInject: Process found! | " + std::to_string(procId) + " | invalid file path";
-            SetStatusText(debug, 0);
-            check_Auto->SetValue(false); // wxWidgets does that automaticly on click so we only need this here
-            disableAutoInject();
-            autoInject = false;
-            saveConfigState();
+            SetStatusText("AutoInject: Invalid DLL file path!", 0);
             cheapThreadFix = false;
             return true;
         }
-        SetAccessControl(wStrPath, L"S-1-15-2-1");
-        performInjection(procId, wStrPath.c_str());
-        debug = "Process found! | " + std::to_string(procId) + " | valid file path | Injected!";
-        SetStatusText(debug, 0);
-        oldProcId = procId;
 
-        ref->saveConfigFromUi();
+        SetAccessControl(wStrPath, L"S-1-15-2-1");
+
+        int res = performInjection(procId, wStrPath.c_str());
+        if (res == 0) {
+            oldProcId = procId;
+            SetStatusText("AutoInject: Injected successfully! | PID: " + std::to_string(procId), 0);
+        }
+        else {
+            SetStatusText("AutoInject: Failed (Code: " + std::to_string(res) + ") | Retrying... | PID: " + std::to_string(procId), 0);
+            procId = 0;
+        }
     }
+
     cheapThreadFix = false;
     return false;
 }
