@@ -2,6 +2,7 @@
 #include "inject.h"
 #include <algorithm>
 #include <string>
+#include <cctype>
 
 struct WindowSearchData {
     const char *targetTitle;

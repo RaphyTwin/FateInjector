@@ -4,6 +4,8 @@
 
 #include <fstream>
 #include <algorithm>
+#include <cwctype>
+#include <wctype.h>
 #include <direct.h>
 
 std::string path;
@@ -75,7 +77,7 @@ bool config::analyseBool()
 {
     std::wstring lowerVal = value;
     std::transform(lowerVal.begin(), lowerVal.end(), lowerVal.begin(), [](wchar_t c) {
-        return static_cast<wchar_t>(std::towlower(c));
+        return static_cast<wchar_t>(towlower(c));
     });
     if (lowerVal == L"true" || lowerVal == L"1")
     {

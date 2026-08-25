@@ -5,3 +5,6 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include <cwctype>
+#include <cctype>
+#include <wctype.h>
