@@ -13,7 +13,7 @@
 #include <Aclapi.h>
 #include <Sddl.h>
 
-void SetAccessControl(std::wstring &ExecutableName, const wchar_t* AccessString)
+void SetAccessControl(const std::wstring &ExecutableName, const wchar_t* AccessString)
 {
 	PSECURITY_DESCRIPTOR SecurityDescriptor = nullptr;
 	EXPLICIT_ACCESSW ExplicitAccess = { 0 };

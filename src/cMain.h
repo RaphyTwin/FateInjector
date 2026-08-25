@@ -1,5 +1,6 @@
 #pragma once
 #include "taskBarIcon.h"
+#include <wx/timer.h>
 
 class cMain : public wxFrame
 {
@@ -22,6 +23,7 @@ public:
 	wxFileDialog *openDialog = nullptr;
 	taskBarIcon taskBarControl;
 	wxNotificationMessage *notification = nullptr;
+	wxTimer autoInjectTimer;
 
 public:
 	static void OnInjectButtonExecute(wxCommandEvent &evt, cMain *ref);
@@ -31,13 +33,17 @@ public:
 
 	void OnCustomCheckBox(wxCommandEvent &evt);
 	void OnAutoCheckBox(wxCommandEvent &evt);
+	void OnAutoInjectTimer(wxTimerEvent &evt);
+	void OnClose(wxCloseEvent &evt);
 
 	void onTaskBarDClick(wxCommandEvent &evt);
 
 	wxDECLARE_EVENT_TABLE();
 
 public:
-	bool loopInject();
+	void checkAndAutoInject();
+	void startAutoInject();
+	void stopAutoInject();
 	void disableAutoInject();
     void saveConfigState();
     void saveConfigFromUi();

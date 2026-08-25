@@ -10,6 +10,7 @@ extern bool hideMenu;
 extern std::wstring delaystr;
 extern std::wstring dllPath;
 extern std::wstring titleName;
+extern DWORD lastInjectedPid;
 
 
 class config {

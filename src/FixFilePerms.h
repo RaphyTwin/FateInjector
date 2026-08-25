@@ -1,5 +1,5 @@
 #pragma once
 
 
-void SetAccessControl(std::wstring& ExecutableName, const wchar_t* AccessString);
+void SetAccessControl(const std::wstring& ExecutableName, const wchar_t* AccessString);
 

@@ -22,6 +22,7 @@ bool hideMenu = false;
 std::wstring delaystr = L"5";
 std::wstring dllPath = L"Click \"Select\" to select the dll file";
 std::wstring titleName = L"Minecraft";
+DWORD lastInjectedPid = 0;
 
 config::config()
 {
@@ -37,13 +38,13 @@ bool config::loadConfig()
         std::wstring line;
         while (getline(cFile, line))
         {
-            if (line[0] == '#' || line.empty())
+            if (line.empty() || line[0] == L'#')
                 continue;
-            size_t delimiterPos = line.find('=');
+            size_t delimiterPos = line.find(L'=');
+            if (delimiterPos == std::wstring::npos)
+                continue;
             name = line.substr(0, delimiterPos);
-
             value = line.substr(delimiterPos + 1);
-            // std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c) { return std::tolower(c); });
             analyseState();
         }
         return false;
@@ -59,13 +60,12 @@ bool config::saveConfig()
     std::wofstream create(path);
     if (create.is_open())
     {
-        std::wstring configstr = makeConfig();
-        create << configstr;
+        std::wstring content = makeConfig();
+        create << content;
     }
     else
     {
         wxMessageBox("Can't create config file!", "Fate Client ERROR", wxICON_ERROR);
-        // std::cout << "Couldn't create config file on " + path << std::endl;
         return true;
     }
     return false;
@@ -73,85 +73,70 @@ bool config::saveConfig()
 
 bool config::analyseBool()
 {
-    std::transform(value.begin(), value.end(), value.begin(), [](unsigned char c)
-                   { return std::tolower(c); });
-    if (value == "true" || value == "1")
+    std::wstring lowerVal = value;
+    std::transform(lowerVal.begin(), lowerVal.end(), lowerVal.begin(), [](wchar_t c) {
+        return static_cast<wchar_t>(std::towlower(c));
+    });
+    if (lowerVal == L"true" || lowerVal == L"1")
     {
-        std::cout << name << " "
-                  << "true" << '\n';
         return true;
     }
     else
     {
-        std::cout << name << " "
-                  << "false" << '\n';
         return false;
     }
 }
 
 int config::analyseInt()
 {
-    if (std::all_of(value.begin(), value.end(), ::isdigit))
-    {
-        std::cout << name << " " << value << '\n';
+    try {
         return std::stoi(value);
-    }
-    else
-    {
-        std::cout << name << " Is not parsable \"" << value << "\"\n";
+    } catch (...) {
         return 0;
     }
 }
 
 std::wstring config::makeConfig()
 {
-
-    configstr += L"#Fate Client injector config file\n";
-
-    // customProcName
-    configstr += customProcName == true ? L"customProcName=true\n" : L"customProcName=false\n";
-    // delaystr
-    configstr += L"delaystr=" + delaystr + '\n';
-    // autoInject
-    configstr += autoInject == true ? L"autoInject=true\n" : L"autoInject=false\n";
-    // hideMenu
-    configstr += hideMenu == true ? L"hideMenu=true\n" : L"hideMenu=false\n";
-    // dllPath
-    configstr += L"dllPath=" + dllPath + '\n';
-    // procName
-    configstr += L"titleName=" + titleName + '\n';
-
-    return configstr;
+    std::wstring str;
+    str += L"#Fate Client injector config file\n";
+    str += customProcName ? L"customProcName=true\n" : L"customProcName=false\n";
+    str += L"delaystr=" + delaystr + L"\n";
+    str += autoInject ? L"autoInject=true\n" : L"autoInject=false\n";
+    str += hideMenu ? L"hideMenu=true\n" : L"hideMenu=false\n";
+    str += L"dllPath=" + dllPath + L"\n";
+    str += L"titleName=" + titleName + L"\n";
+    return str;
 }
 
 void config::analyseState()
 {
-    if (name == "customProcName")
+    if (name == L"customProcName")
     {
         customProcName = analyseBool();
     }
-    else if (name == "delaystr")
+    else if (name == L"delaystr")
     {
         delaystr = value;
     }
-    else if (name == "autoInject")
+    else if (name == L"autoInject")
     {
         autoInject = analyseBool();
     }
-    else if (name == "hideMenu")
+    else if (name == L"hideMenu")
     {
         hideMenu = analyseBool();
     }
-    else if (name == "dllPath")
+    else if (name == L"dllPath")
     {
         dllPath = value;
     }
-    else if (name == "titleName" || name == "procName")
+    else if (name == L"titleName" || name == L"procName")
     {
         titleName = value;
     }
     else
     {
-        wxMessageBox("\"" + name + "\" Is not a known Entry\nDeleting the config file might help!", "Fate Config WARNING", wxICON_INFORMATION);
+        wxMessageBox("\"" + wxString(name) + "\" Is not a known Entry\nDeleting the config file might help!", "Fate Config WARNING", wxICON_INFORMATION);
     }
 }
